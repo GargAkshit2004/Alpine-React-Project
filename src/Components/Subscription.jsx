@@ -1,13 +1,11 @@
-// Subscription.js (Frontend - React)
 import React, { useState } from 'react';
 
 const Subscription = () => {
-  const [email, setEmail] = useState('');  // State to store the email input
-  const [agreed, setAgreed] = useState(false);  // State to track agreement to terms
+  const [email, setEmail] = useState(''); // State to store the email input
+  const [agreed, setAgreed] = useState(false); // State to track agreement to terms
 
   // Enhanced email validation function
   const isValidEmail = (email) => {
-    // Regex: Ensures username starts with a letter, followed by alphanumerics, and domain includes "@"
     const emailRegex = /^[a-zA-Z0-9._!#$%&'*+/=?^`{|}~-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     return emailRegex.test(email);
   };
@@ -18,7 +16,7 @@ const Subscription = () => {
 
     // Validate the email before proceeding
     if (!isValidEmail(email)) {
-      alert('Error: Please enter a valid email address. The username must start with a letter and can only contain alphanumeric characters.'); // Show validation error in a prompt box
+      alert('Error: Please enter a valid email address.'); // Show validation error in a prompt box
       return; // Stop further execution
     }
 
@@ -29,28 +27,31 @@ const Subscription = () => {
     }
 
     try {
-      // Send the subscription data to the backend
-      const response = await fetch('http://localhost:5000/subscribe', {
+      const response = await fetch('http://localhost:5001/subscribe', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ email, agreedToTerms: agreed }),
       });
-
-      const data = await response.json();
-      if (response.ok) {
-        alert('Success: Subscription saved successfully!'); // Show success message in a prompt box
-        setEmail(''); // Clear email input
-        setAgreed(false); // Reset the checkbox
-      } else {
-        alert(`Error ${response.status}: ${data.message || 'An error occurred. Please try again.'}`); // Show error message with status code
+    
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Backend Error:', errorData);
+        alert(`Error ${response.status}: ${errorData.message || 'An error occurred.'}`);
+        return;
       }
+    
+      const data = await response.json();
+      alert('Success: Subscription saved successfully!');
+      setEmail('');
+      setAgreed(false);
     } catch (error) {
-      alert('Error: An error occurred. Please try again later.'); // Handle network or server errors
+      console.error('Network Error:', error);
+      alert('Error: An error occurred. Please try again later.');
     }
   };
-
+    
   return (
     <div className="subscribe">
       <h2 className="subscribe__title">Let's keep in touch</h2>
